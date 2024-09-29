@@ -5,8 +5,7 @@ date: "2024-09-24"
 output: html_document
 bibliography: BIOL3140.bib
 ---
-
-```{r,"setup", include=FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -19,20 +18,26 @@ library(geiger) #for eco analysis
 library(knitr) #for knitting options
 ```
 
-# Introduction
-@hagey2017there
+
+## Introduction
+The purpose of the *Anolis* species project is to assess the morphological and allometric differences between the ecomorphs within the genus *Anolis*. The genus *Anolis* describes a diverse group of iguanian reptiles that comprise over 400 species. Ernest Williams first coined the term ecomorph to describe a group of species with similar ecological niche and behavior within the context of this niche who may not share a most recent common ancestor. The aim of this project is to visualize allometry and assess how hind limb length and size covary with ecological niche. 
+
+<center>
+[![A green lizard with a pink flower in its mouth. Anole green anole lizard.](https://cdn12.picryl.com/photo/2016/12/31/anole-green-anole-lizard-animals-2e094d-1024.jpg)](https://cdn12.picryl.com/photo/2016/12/31/anole-green-anole-lizard-animals-2e094d-1024.jpg)
+</center>
+
+## Methods
+We were able to visualize allometry and assess how hind limb length and size covary with ecological niche by downloading several data sets which include information on the snout-vent length and the mean total hind limb length from @hagey2017there and phylogenetic tree data from @poe2017APhylogenetic. We then removed any rows for which the Ecomorph value was "U" or "CH" and any missing values. Next, we mutated our tibble containing the morphological and ecological data via log transformation for SVL, HTotal, PH and ArbPD. These data are continuous, so it makes sense to use a log transformation to convert these data to proportional representations. Then, we visualized our log transformed data in ggplot using SVL as the x-value and HTotal for the y-value. Then we added point and line "lm" geometries to the plot and colored it by ecomorph. Next we performed PGLS under two different simple regression models- one that includes ecomorph and a second that does not. We used AIC scores to determine which oen was the most accurate. Finally, we used a boxplot to visualize our most accurate PGLS model and its residuals.
 
 
-# Methods
 
-# Results
-
+## Results
 ```{r,"load the data", include=FALSE}
 anole <- read_csv("anole.dat.csv")
 anole.eco <- read_csv("anole.eco.csv")
 ```
 <center>
-```{r, "tree", echo=FALSE, fig.cap="Phylogenetic tree within the genus *anolis*"}
+```{r, "tree", echo=FALSE, fig.cap="Phylogenetic tree within the genus *Anolis*"}
 anole.tree <- read.tree("anole.tre")
 plot(anole.tree, cex=.4)
 ```
@@ -110,9 +115,17 @@ print(p.eco.phylo)
 ```
 </center>
 
-# Disccussion
 
 
-# Author Contributions 
 
-# References
+## Discussion
+From our AIC results we can conclude that a phylogenetically corrected regression model with ecomorph and traits evolving under BM is the best way to represent these data. Our boxplot supports this conclusion as the residuals from PGLS condense when we consider phylogeny, meaning that compared to other *Anolis* species, it is an unremarkable group in terms of relative hindlimb size, making this model the best fit.
+
+
+
+## Author Contributions
+The authors divided up the quantitative and qualitative portions of this project and came together to ask questions and collaborate on the final submission. Jax Lanzerotti completed for the quantitative analysis and Layne Kiratsous completed the descriptions and written analysis. 
+
+
+
+## References
