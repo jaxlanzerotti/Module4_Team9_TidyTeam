@@ -1,0 +1,118 @@
+---
+title: "Module 4"
+author: "Tidy Team"
+date: "2024-09-24"
+output: html_document
+bibliography: BIOL3140.bib
+---
+
+```{r,"setup", include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r,include=FALSE}
+library(tidyverse) #always
+library(ape) #for evo analysis
+library(nlme) #ditto
+library(MuMIn) #for AIC
+library(geiger) #for eco analysis
+library(knitr) #for knitting options
+```
+
+# Introduction
+@hagey2017there
+
+
+# Methods
+
+# Results
+
+```{r,"load the data", include=FALSE}
+anole <- read_csv("anole.dat.csv")
+anole.eco <- read_csv("anole.eco.csv")
+```
+<center>
+```{r, "tree", echo=FALSE, fig.cap="Phylogenetic tree within the genus *anolis*"}
+anole.tree <- read.tree("anole.tre")
+plot(anole.tree, cex=.4)
+```
+@poe2017APhylogenetic
+</center>
+
+
+
+```{r,join by species, include=FALSE}
+anole2 <- anole%>%
+left_join(anole.eco)%>%
+  filter(!Ecomorph%in%c("U","CH"))%>%
+  na.omit()
+
+anole.log <- anole2%>%
+  mutate_at(c("SVL", "HTotal","PH","ArbPD"),log)
+```
+
+```{r, "PGLS models", fig.cap= "Models for Phylogenetic Generalized Least Squares", echo=FALSE }
+### phylogenetic GLS models
+
+#PGLS under BM, no ecomorph
+pgls.BM1 <- gls(HTotal ~SVL, correlation = corBrownian(1,phy = anole.tree,form=~Species),data = anole.log, method = "ML")
+
+#PGLS under BM, w ecomorph
+pgls.BM2 <- gls(HTotal ~SVL * Ecomorph2, correlation = corBrownian(1,phy = anole.tree,form=~Species),data = anole.log, method = "ML")
+
+#PGLS under OU, no ecomorph
+pgls.OU1 <- gls(HTotal ~SVL, correlation = corMartins(0,phy = anole.tree,form=~Species),data = anole.log, method = "ML")
+
+#PGLS under OU, w, ecomorph
+pgls.OU2 <- gls(HTotal ~SVL * Ecomorph2, correlation = corMartins(0,phy = anole.tree,form=~Species),data = anole.log, method = "ML")
+```
+
+```{r, "AIC", echo=FALSE}
+#AIC operations
+anole.phylo.aic <- AICc(pgls.BM1,pgls.BM2,pgls.OU1,pgls.OU2)
+anole.phylow.aicw <- aicw(anole.phylo.aic$AICc)
+
+aic_table <- data.frame(Model = c("BM without Ecomorph", "BM with Ecomorph", "OU without Ecomorph", "OU with Ecomorph"), AICc = anole.phylo.aic$AICc, AICW = anole.phylow.aicw$w)
+aic_table$AICc <- round(aic_table$AICc, 3)
+aic_table$AICW <- round(aic_table$AICW, 3)
+
+kable(aic_table, col.names = c("Model", "AICc", "AICW"), caption = "Comparison of Phylogenetic Generalized Least Squares (PGLS) Models for Anole Hindlimb Length (HTotal)",
+      align = c('l', 'r', 'r'))
+```
+
+```{r, "add residuals", include=FALSE}
+#add phylo-corrected residuals
+anole.log <- anole.log%>%
+  mutate(phylo.res=residuals(pgls.BM2))
+```
+
+<center>
+```{r, "regression plot for Htotal vs SVL", echo=FALSE, fig.cap="Regression plot of log-transformed hind-limb length vs snout-vent length."}
+p.regression <- ggplot(anole.log, aes(x = SVL, y = HTotal, color = Ecomorph2)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, aes(color = Ecomorph2)) +
+   labs(x = "Log Snout-Vent Length (SVL)",y = "Log Hindlimb Length (HTotal)",color = "Ecomorph")
+print(p.regression)
+```
+</center>
+
+
+
+
+<center>
+```{r,"plot residuals", fig.cap="Boxplot of phylogenetically corrected hindlimb residuals (HTotal) versus anole ecomorph (Ecomorph2). ", echo=FALSE}
+#plot residuals
+p.eco.phylo <- anole.log%>%
+ggplot(aes(x=Ecomorph2,y=phylo.res)) +geom_boxplot() +stat_summary(fun=mean, geom="point", size=3)
+
+print(p.eco.phylo)
+
+```
+</center>
+
+# Disccussion
+
+
+# Author Contributions 
+
+# References
